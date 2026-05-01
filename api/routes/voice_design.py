@@ -34,7 +34,6 @@ async def generate_voice_design(
     Returns:
         WAV audio file
     """
-    temp_file_path = None
     try:
         logger.info(f"Generating voice design for description: {voice_description[:50]}...")
         

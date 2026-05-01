@@ -1,31 +1,34 @@
-FROM python:3.10-slim as builder
+FROM debian:12-slim as builder
 
 WORKDIR /app
 
-# Install system dependencies
-RUN apt-get update && apt-get install -y \
-    build-essential \
+# Install system dependencies and Python tooling
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    python3 python3-distutils python3-venv python3-pip python3-dev build-essential curl \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy requirements and install Python dependencies
+# Copy requirements and install Python dependencies into a virtualenv to avoid
+# system-managed environment issues (PEP 668). This keeps the builder clean.
 COPY requirements.txt .
-RUN pip install --user --no-cache-dir -r requirements.txt
+RUN python3 -m venv /opt/venv \
+    && /opt/venv/bin/python -m pip install --upgrade pip \
+    && /opt/venv/bin/pip install --no-cache-dir -r requirements.txt
 
-# Production stage
-FROM python:3.10-slim
+# Production stage using mandated base image debian:12-slim
+FROM debian:12-slim
 
 WORKDIR /app
 
 # Install runtime dependencies
-RUN apt-get update && apt-get install -y \
-    libsndfile1 \
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    python3 libsndfile1 curl \
     && rm -rf /var/lib/apt/lists/*
 
 # Create non-root user
 RUN useradd --create-home --shell /bin/bash appuser
 
-# Copy installed packages from builder
-COPY --from=builder /root/.local /home/appuser/.local
+# Copy installed Python virtualenv from builder
+COPY --from=builder /opt/venv /opt/venv
 
 # Copy application code
 COPY . .
@@ -36,8 +39,8 @@ RUN chown -R appuser:appuser /app
 # Switch to non-root user
 USER appuser
 
-# Set PATH to include user's local bin
-ENV PATH=/home/appuser/.local/bin:$PATH
+# Ensure virtualenv binaries are on PATH
+ENV PATH=/opt/venv/bin:$PATH
 
 # Expose ports
 EXPOSE 8038 8138
@@ -46,5 +49,5 @@ EXPOSE 8038 8138
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
     CMD curl -f http://localhost:8138/api/v1/health || exit 1
 
-# Start both frontend and backend services
-CMD ["sh", "-c", "python -m uvicorn api.main:app --host 0.0.0.0 --port 8138 & python -m http.server 8038 --directory dashboard"]
+# Start both backend and frontend services
+CMD ["sh", "-c", "python3 -m uvicorn api.main:app --host 0.0.0.0 --port 8138 & python3 -m http.server 8038 --directory dashboard"]

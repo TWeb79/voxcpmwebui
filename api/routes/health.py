@@ -27,7 +27,7 @@ async def health_check():
                 "model_loaded": True,
                 "model_info": {
                     "sample_rate": model.tts_model.sample_rate,
-                    "device": str(next(model.parameters()).device) if hasattr(model, 'parameters') else "unknown"
+                "device": str(next(iter(model.parameters())).device) if hasattr(model, 'parameters') and callable(model.parameters) else "unknown"
                 }
             }
         else:
@@ -66,7 +66,7 @@ async def get_model_info():
             "model_info": {
                 "sample_rate": model.tts_model.sample_rate,
                 "vocab_size": getattr(model.tts_model, 'vocab_size', 'unknown'),
-                "device": str(next(model.parameters()).device) if hasattr(model, 'parameters') else "unknown"
+                "device": str(next(iter(model.parameters())).device) if hasattr(model, 'parameters') and callable(model.parameters) else "unknown"
             }
         }
     except Exception as e:

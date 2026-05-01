@@ -19,8 +19,7 @@ class VoxCPMModel:
         return cls._instance
     
     def __init__(self):
-        if self._model is None:
-            self._load_model()
+        pass  # Lazy loading — call load() explicitly or access .model property
     
     def _load_model(self) -> None:
         """Load the VoxCPM2 model."""
@@ -40,9 +39,9 @@ class VoxCPMModel:
     
     @property
     def model(self) -> VoxCPM:
-        """Get the loaded VoxCPM model."""
+        """Get the loaded VoxCPM model, loading it if necessary."""
         if self._model is None:
-            raise RuntimeError("Model not loaded")
+            self._load_model()
         return self._model
     
     def is_loaded(self) -> bool:
@@ -50,5 +49,6 @@ class VoxCPMModel:
         return self._model is not None
 
 
-# Global instance
-voxcpm_model = VoxCPMModel()
+# Global instance — model loads lazily on first property access
+voxcpm_model = VoxCPMModel.__new__(VoxCPMModel)
+VoxCPMModel._instance = voxcpm_model

@@ -9,4 +9,8 @@ services:
       - ./temp:/app/temp      # Temporary files
     environment:
       - VOXCPM_MODEL_PATH=openbmb/VoxCPM2
+      - HF_HOME=/app/models/huggingface
+      - TRANSFORMERS_CACHE=/app/models/huggingface
     restart: unless-stopped
+    # GPU reservation removed for compatibility on hosts without NVIDIA runtime
+    # To enable GPU, add appropriate device reservation or install NVIDIA Container Toolkit

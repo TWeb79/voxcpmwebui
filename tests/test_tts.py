@@ -11,7 +11,7 @@ client = TestClient(app)
 
 def test_health_check():
     """Test health check endpoint."""
-    with patch('api.models.voxcpm.voxcpm_model') as mock_model:
+    with patch('api.routes.tts.voxcpm_model') as mock_model:
         mock_model.is_loaded.return_value = True
         mock_model.model.tts_model.sample_rate = 24000
         
@@ -24,7 +24,7 @@ def test_health_check():
 
 def test_health_check_model_not_loaded():
     """Test health check when model is not loaded."""
-    with patch('api.models.voxcpm.voxcpm_model') as mock_model:
+    with patch('api.routes.tts.voxcpm_model') as mock_model:
         mock_model.is_loaded.return_value = False
         
         response = client.get("/api/v1/health")
@@ -36,8 +36,8 @@ def test_health_check_model_not_loaded():
 
 def test_generate_tts_success():
     """Test successful TTS generation."""
-    with patch('api.models.voxcpm.voxcpm_model') as mock_model, \
-         patch('api.services.audio_service.audio_service') as mock_audio:
+    with patch('api.routes.tts.voxcpm_model') as mock_model, \
+         patch('api.routes.tts.audio_service') as mock_audio:
         
         # Mock the VoxCPM model
         mock_instance = Mock()

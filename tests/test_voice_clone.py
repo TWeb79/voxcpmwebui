@@ -11,9 +11,9 @@ client = TestClient(app)
 
 def test_voice_clone_success():
     """Test successful voice cloning."""
-    with patch('api.models.voxcpm.voxcpm_model') as mock_model, \
-         patch('api.services.audio_service.audio_service') as mock_audio, \
-         patch('api.services.file_service.file_service') as mock_file:
+    with patch('api.routes.voice_clone.voxcpm_model') as mock_model, \
+         patch('api.routes.voice_clone.audio_service') as mock_audio, \
+         patch('api.routes.voice_clone.file_service') as mock_file:
         
         # Mock the VoxCPM model
         mock_instance = Mock()
@@ -23,6 +23,7 @@ def test_voice_clone_success():
         
         # Mock audio service
         mock_audio.save_wav_file.return_value = b"fake wav data"
+        mock_audio.validate_audio_file.return_value = True
         
         # Mock file service
         mock_file.create_temp_file_from_upload.return_value = "/tmp/fake_file.wav"

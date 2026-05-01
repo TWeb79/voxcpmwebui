@@ -2,8 +2,11 @@
  * Main Application Logic for VoxCPM WebUI
  */
 document.addEventListener('DOMContentLoaded', () => {
-    // Initialize API client
-    const api = new APIClient('http://localhost:8138');
+    // Initialize API client with configurable base URL
+    const apiBaseURL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+        ? 'http://' + window.location.hostname + ':8138'
+        : window.location.protocol + '//' + window.location.hostname + ':8138';
+    const api = new APIClient(apiBaseURL);
     
     // DOM elements
     const tabs = document.querySelectorAll('.tab-button');
@@ -243,30 +246,34 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     
     function clearResult() {
+        if (audioPlayer.src) {
+            window.URL.revokeObjectURL(audioPlayer.src);
+        }
         audioPlayer.src = '';
+        audioPlayer.load();
         downloadBtn.disabled = true;
         currentAudioBlob = null;
+        errorMessage.classList.add('hidden');
     }
     
     function showMessage(message, type) {
         errorMessage.textContent = message;
-        errorMessage.className = type === 'success' 
-            ? 'hidden' 
-            : 'hidden'; // Start hidden then show
-        
-        // Show error message
-        if (type === 'error') {
-            errorMessage.classList.remove('hidden');
-        } else {
-            // For success messages, show briefly then hide
-            errorMessage.classList.remove('hidden');
+        errorMessage.classList.remove('hidden');
+
+        if (type === 'success') {
             errorMessage.style.backgroundColor = 'rgba(16, 185, 129, 0.1)';
             errorMessage.style.borderColor = 'var(--success-color)';
             errorMessage.style.color = 'var(--success-color)';
-            
             setTimeout(() => {
                 errorMessage.classList.add('hidden');
+                errorMessage.style.backgroundColor = '';
+                errorMessage.style.borderColor = '';
+                errorMessage.style.color = '';
             }, 3000);
+        } else {
+            errorMessage.style.backgroundColor = '';
+            errorMessage.style.borderColor = '';
+            errorMessage.style.color = '';
         }
     }
     
