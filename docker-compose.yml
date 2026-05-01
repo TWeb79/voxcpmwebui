@@ -1,0 +1,12 @@
+services:
+  voxcpm-webui:
+    build: .
+    ports:
+      - "8038:8038"  # Frontend
+      - "8138:8138"  # Backend API
+    volumes:
+      - ./models:/app/models  # Cache models to avoid re-downloading
+      - ./temp:/app/temp      # Temporary files
+    environment:
+      - VOXCPM_MODEL_PATH=openbmb/VoxCPM2
+    restart: unless-stopped
